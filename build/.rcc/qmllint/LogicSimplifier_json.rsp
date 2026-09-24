@@ -1,0 +1,16 @@
+--bare
+-I
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build
+-I
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/LogicUI
+-I
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build
+-I
+/usr/lib64/qt6/qml
+--resource
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/.qt/rcc/qmake_LogicUI.qrc
+--resource
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/.qt/rcc/LogicSimplifier_raw_qml_0.qrc
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/src/ui/main.qml
+--json
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/LogicSimplifier_qmllint.json
