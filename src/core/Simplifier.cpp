@@ -1,5 +1,6 @@
 #include "Simplifier.h"
 #include <set>
+#include <map>
 #include <algorithm>
 #include <sstream>
 
@@ -21,6 +22,14 @@ bool canMerge(const std::string& a, const std::string& b, std::string& merged) {
         }
     }
     return diffCount == 1;
+}
+
+bool coversMinterm(const std::string& pi, int minterm, int numVars) {
+    std::string mStr = toBinaryString(minterm, numVars);
+    for (size_t i = 0; i < pi.length(); ++i) {
+        if (pi[i] != '-' && pi[i] != mStr[i]) return false;
+    }
+    return true;
 }
 
 std::string Simplifier::simplify(int numVars, const std::vector<std::string>& varNames, const std::vector<int>& minterms, std::string& processLog) {
@@ -69,11 +78,9 @@ std::string Simplifier::simplify(int numVars, const std::vector<std::string>& va
                         log << "  Ітерація " << iteration << ":\n";
                         iterHasMerges = true;
                     }
-                    // Щоб не дублювати логування одних і тих же склеювань, перевіряємо, чи ми вже це записували
                     if (nextTerms.find(mergedStr) == nextTerms.end()) {
                         log << "    Склеюємо " << termList[i] << " та " << termList[j] << " => " << mergedStr << "\n";
                     }
-                    
                     nextTerms.insert(mergedStr);
                     mergedThisRound.insert(termList[i]);
                     mergedThisRound.insert(termList[j]);
@@ -90,32 +97,55 @@ std::string Simplifier::simplify(int numVars, const std::vector<std::string>& va
         currentTerms = nextTerms;
         iteration++;
     }
-    
     for (const auto& term : currentTerms) primeImplicants.insert(term);
 
     log << "\n  Знайдені прості імпліканти (ті, що більше не склеюються):\n    ";
     for (const auto& pi : primeImplicants) log << pi << "  ";
-    log << "\n\nЕТАП 3: Вибір мінімального покриття (Жадібний алгоритм):\n";
+    log << "\n\nЕТАП 3: Вибір істотних імплікант та мінімального покриття:\n";
+
+    std::map<int, std::vector<std::string>> covMap;
+    for (int m : minterms) {
+        for (const auto& pi : primeImplicants) {
+            if (coversMinterm(pi, m, numVars)) {
+                covMap[m].push_back(pi);
+            }
+        }
+    }
 
     std::set<int> uncoveredMinterms(minterms.begin(), minterms.end());
     std::vector<std::string> selectedImplicants;
+    std::set<std::string> selectedSet;
 
+    // 1. Пошук істотних простих імплікант (EPI)
+    for (int m : minterms) {
+        if (covMap[m].size() == 1) {
+            std::string epi = covMap[m][0];
+            if (selectedSet.find(epi) == selectedSet.end()) {
+                selectedSet.insert(epi);
+                selectedImplicants.push_back(epi);
+                log << "  Істотна імпліканта: " << epi << " (єдина покриває мінтерм " << m << ")\n";
+
+                for (int m2 : minterms) {
+                    if (coversMinterm(epi, m2, numVars)) {
+                        uncoveredMinterms.erase(m2);
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Жадібне докриття для решти (якщо залишились)
     while (!uncoveredMinterms.empty()) {
         std::string bestImplicant;
         int maxCovered = -1;
         std::vector<int> bestCoveredMinterms;
 
         for (const auto& pi : primeImplicants) {
+            if (selectedSet.find(pi) != selectedSet.end()) continue;
+
             std::vector<int> covered;
             for (int m : uncoveredMinterms) {
-                std::string mStr = toBinaryString(m, numVars);
-                bool matches = true;
-                for (size_t i = 0; i < pi.length(); ++i) {
-                    if (pi[i] != '-' && pi[i] != mStr[i]) {
-                        matches = false; break;
-                    }
-                }
-                if (matches) covered.push_back(m);
+                if (coversMinterm(pi, m, numVars)) covered.push_back(m);
             }
 
             if ((int)covered.size() > maxCovered) {
@@ -125,15 +155,14 @@ std::string Simplifier::simplify(int numVars, const std::vector<std::string>& va
             }
         }
 
+        selectedSet.insert(bestImplicant);
         selectedImplicants.push_back(bestImplicant);
-        log << "  Вибрано імпліканту " << bestImplicant << " (покриває мінтерми: ";
+        log << "  Додатково вибрано: " << bestImplicant << " (покриває мінтерми: ";
         for (size_t i = 0; i < bestCoveredMinterms.size(); ++i) {
             log << bestCoveredMinterms[i] << (i == bestCoveredMinterms.size() - 1 ? "" : ", ");
             uncoveredMinterms.erase(bestCoveredMinterms[i]);
         }
         log << ")\n";
-        
-        primeImplicants.erase(bestImplicant); 
     }
 
     log << "\nЕТАП 4: Перетворення назад у змінні:\n";

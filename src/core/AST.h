@@ -81,7 +81,7 @@ public:
     }
 };
 
-// Базовий клас для бінарних вузлів
+// Базовий клас бінарних операцій
 class BinaryNode : public ASTNode {
 public:
     std::unique_ptr<ASTNode> left;
@@ -108,7 +108,10 @@ public:
     std::string toString() const override { return "(" + left->toString() + " & " + right->toString() + ")"; }
     std::unique_ptr<ASTNode> clone() const override { return std::make_unique<AndNode>(left->clone(), right->clone()); }
     bool evaluateSteps(const std::map<std::string, bool>& vars, std::map<std::string, bool>& steps) const override {
-        bool res = left->evaluateSteps(vars, steps) && right->evaluateSteps(vars, steps);
+        // ОБОВ'ЯЗКОВО обчислюємо обидві сторони перед оператором &&, щоб уникнути short-circuit
+        bool l = left->evaluateSteps(vars, steps);
+        bool r = right->evaluateSteps(vars, steps);
+        bool res = l && r;
         steps[toString()] = res;
         return res;
     }
@@ -122,7 +125,10 @@ public:
     std::string toString() const override { return "(" + left->toString() + " | " + right->toString() + ")"; }
     std::unique_ptr<ASTNode> clone() const override { return std::make_unique<OrNode>(left->clone(), right->clone()); }
     bool evaluateSteps(const std::map<std::string, bool>& vars, std::map<std::string, bool>& steps) const override {
-        bool res = left->evaluateSteps(vars, steps) || right->evaluateSteps(vars, steps);
+        // ОБОВ'ЯЗКОВО обчислюємо обидві сторони перед оператором ||
+        bool l = left->evaluateSteps(vars, steps);
+        bool r = right->evaluateSteps(vars, steps);
+        bool res = l || r;
         steps[toString()] = res;
         return res;
     }
@@ -136,7 +142,10 @@ public:
     std::string toString() const override { return "(" + left->toString() + " -> " + right->toString() + ")"; }
     std::unique_ptr<ASTNode> clone() const override { return std::make_unique<ImpliesNode>(left->clone(), right->clone()); }
     bool evaluateSteps(const std::map<std::string, bool>& vars, std::map<std::string, bool>& steps) const override {
-        bool res = !left->evaluateSteps(vars, steps) || right->evaluateSteps(vars, steps);
+        // ОБОВ'ЯЗКОВО обчислюємо обидві сторони
+        bool l = left->evaluateSteps(vars, steps);
+        bool r = right->evaluateSteps(vars, steps);
+        bool res = (!l) || r;
         steps[toString()] = res;
         return res;
     }
@@ -150,7 +159,9 @@ public:
     std::string toString() const override { return "(" + left->toString() + " <-> " + right->toString() + ")"; }
     std::unique_ptr<ASTNode> clone() const override { return std::make_unique<EquivNode>(left->clone(), right->clone()); }
     bool evaluateSteps(const std::map<std::string, bool>& vars, std::map<std::string, bool>& steps) const override {
-        bool res = left->evaluateSteps(vars, steps) == right->evaluateSteps(vars, steps);
+        bool l = left->evaluateSteps(vars, steps);
+        bool r = right->evaluateSteps(vars, steps);
+        bool res = (l == r);
         steps[toString()] = res;
         return res;
     }

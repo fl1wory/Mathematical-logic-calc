@@ -106,7 +106,9 @@ CMakeFiles/LogicSimplifier.dir/src/core/Simplifier.cpp.o: \
  /usr/include/c++/16/ext/aligned_buffer.h \
  /usr/include/c++/16/bits/node_handle.h \
  /usr/include/c++/16/bits/stl_set.h \
- /usr/include/c++/16/bits/stl_multiset.h /usr/include/c++/16/algorithm \
+ /usr/include/c++/16/bits/stl_multiset.h /usr/include/c++/16/map \
+ /usr/include/c++/16/bits/stl_map.h \
+ /usr/include/c++/16/bits/stl_multimap.h /usr/include/c++/16/algorithm \
  /usr/include/c++/16/bits/stl_algo.h \
  /usr/include/c++/16/bits/algorithmfwd.h \
  /usr/include/c++/16/bits/stl_heap.h \

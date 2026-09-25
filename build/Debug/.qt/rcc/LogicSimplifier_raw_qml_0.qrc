@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/qt/qml/LogicUI/">
+    <file alias="src/ui/main.qml">/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/src/ui/main.qml</file>
+  </qresource>
+</RCC>
+

@@ -1,0 +1,5 @@
+--resource
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/Debug/.qt/rcc/qmake_LogicUI.qrc
+--resource
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/Debug/.qt/rcc/LogicSimplifier_raw_qml_0.qrc
+/qt/qml/LogicUI/src/ui/main.qml

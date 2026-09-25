@@ -1,0 +1,5 @@
+module LogicUI
+typeinfo LogicSimplifier.qmltypes
+prefer :/qt/qml/LogicUI/
+depends QtQuick
+

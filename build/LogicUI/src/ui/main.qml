@@ -3,70 +3,256 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ApplicationWindow {
-    id: window
+    id: root
     visible: true
-    width: 700
-    height: 650
-    title: "Logic Simplifier"
+    width: 440
+    height: 780
+    minimumWidth: 360
+    minimumHeight: 600
+    title: "Калькулятор логіки"
+
+    // Режим клавіатури: false = "Часті", true = "Повний алфавіт A-Z"
+    property bool fullAlphabetMode: false
+
+    // Масиви змінних
+    readonly property var frequentVars: ["A", "B", "C", "D", "P", "Q", "R", "N", "M"]
+    readonly property var allVars: [
+        "A", "B", "C", "D", "E", "F", "G",
+        "H", "I", "J", "K", "L", "M", "N",
+        "O", "P", "Q", "R", "S", "T", "U",
+        "V", "W", "X", "Y", "Z"
+    ]
+
+    // Допоміжні функції для роботи з полем вводу
+    function insertSymbol(sym) {
+        var pos = formulaInput.cursorPosition;
+        formulaInput.insert(pos, sym);
+        formulaInput.cursorPosition = pos + sym.length;
+        formulaInput.forceActiveFocus();
+    }
+
+    function calculate() {
+        if (formulaInput.text.trim() === "") return;
+        if (tabBar.currentIndex === 0) {
+            resultArea.text = logicController.solveStepByStep(formulaInput.text);
+        } else if (tabBar.currentIndex === 1) {
+            resultArea.text = logicController.solveTruthTable(formulaInput.text);
+        } else {
+            resultArea.text = logicController.solveQuine(formulaInput.text);
+        }
+    }
+
+    function deleteChar() {
+        var pos = formulaInput.cursorPosition;
+        if (pos > 0) {
+            formulaInput.remove(pos - 1, pos);
+            formulaInput.cursorPosition = pos - 1;
+        }
+        formulaInput.forceActiveFocus();
+    }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 15
-        spacing: 12
+        anchors.margins: 10
+        spacing: 8
 
-        // Поле введення формули
+        // --- ВЕРХНЯ ЧАСТИНА: Поле введення формули ---
         TextField {
             id: formulaInput
             Layout.fillWidth: true
-            font.pixelSize: 18
-            placeholderText: "Введіть формулу (напр. !(A | B) -> (!A & !B))"
+            Layout.preferredHeight: 52
+            font.pixelSize: 20
+            font.bold: true
+            placeholderText: "Введіть вираз..."
             selectByMouse: true
         }
 
-        // Панель математичних кнопок для швидкого введення
-        RowLayout {
-            spacing: 6
-            Layout.alignment: Qt.AlignHCenter
-
-            Button { text: "∧ (&&)";  onClicked: formulaInput.insert(formulaInput.cursorPosition, " & ") }
-            Button { text: "∨ (|)";  onClicked: formulaInput.insert(formulaInput.cursorPosition, " | ") }
-            Button { text: "¬ (!)";  onClicked: formulaInput.insert(formulaInput.cursorPosition, "!") }
-            Button { text: "→ (->)"; onClicked: formulaInput.insert(formulaInput.cursorPosition, " -> ") }
-            Button { text: "↔ (<->)";onClicked: formulaInput.insert(formulaInput.cursorPosition, " <-> ") }
-            Button { text: "(";      onClicked: formulaInput.insert(formulaInput.cursorPosition, "(") }
-            Button { text: ")";      onClicked: formulaInput.insert(formulaInput.cursorPosition, ")") }
-            Button { text: "Очистити"; onClicked: formulaInput.clear() }
-        }
-
-        // Вкладки режимів
-        TabBar {
-            id: tabBar
+        // --- СЕРЕДНЯ ЧАСТИНА: Калькуляторна клавіатура ---
+        Rectangle {
             Layout.fillWidth: true
-            TabButton { text: "Покрокове спрощення" }
-            TabButton { text: "Таблиця істинності" }
-            TabButton { text: "Метод Куайна-Мак-Класкі" }
-        }
+            Layout.preferredHeight: keyboardLayout.implicitHeight + 16
+            color: "#eef2f5"
+            radius: 8
+            border.color: "#d0d7de"
 
-        // Кнопка розрахунку
-        Button {
-            text: "Обчислити"
-            Layout.fillWidth: true
-            highlighted: true
-            font.bold: true
-            font.pixelSize: 16
+            ColumnLayout {
+                id: keyboardLayout
+                anchors.fill: parent
+                anchors.margins: 8
+                spacing: 6
 
-            onClicked: {
-                if (tabBar.currentIndex === 0) {
-                    resultArea.text = logicController.solveStepByStep(formulaInput.text)
-                } else if (tabBar.currentIndex === 1) {
-                    resultArea.text = logicController.solveTruthTable(formulaInput.text)
-                } else {
-                    resultArea.text = logicController.solveQuine(formulaInput.text)
+                // 1. Панель операторів (ЗАВЖДИ ВИДИМА)
+                GridLayout {
+                    columns: 5
+                    Layout.fillWidth: true
+                    rowSpacing: 4
+                    columnSpacing: 4
+
+                    Button {
+                        text: "¬ (!)"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        onClicked: insertSymbol("!")
+                    }
+                    Button {
+                        text: "∧ (&&)"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        onClicked: insertSymbol(" & ")
+                    }
+                    Button {
+                        text: "∨ (|)"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        onClicked: insertSymbol(" | ")
+                    }
+                    Button {
+                        text: "→ (->)"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        onClicked: insertSymbol(" -> ")
+                    }
+                    Button {
+                        text: "↔ (<->)"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        onClicked: insertSymbol(" <-> ")
+                    }
+
+                    Button {
+                        text: "("
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        onClicked: insertSymbol("(")
+                    }
+                    Button {
+                        text: ")"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        onClicked: insertSymbol(")")
+                    }
+                    Button {
+                        text: "⌫"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        onClicked: deleteChar()
+                    }
+                    Button {
+                        text: "C"
+                        Layout.columnSpan: 2
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
+                        font.bold: true
+                        palette.buttonText: "#d32f2f"
+                        onClicked: formulaInput.clear()
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: "#d0d7de"
+                }
+
+                // 2. Панель літер (Змінних)
+                // РЕЖИМ 1: Часті змінні (A, B, C, D, P, Q, R, N, M)
+                GridLayout {
+                    columns: 5
+                    Layout.fillWidth: true
+                    rowSpacing: 4
+                    columnSpacing: 4
+                    visible: !root.fullAlphabetMode
+
+                    Repeater {
+                        model: root.frequentVars
+                        Button {
+                            text: modelData
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 44
+                            font.pixelSize: 17
+                            font.bold: true
+                            onClicked: insertSymbol(modelData)
+                        }
+                    }
+
+                    // Кнопка перемикання на повний алфавіт
+                    Button {
+                        text: "A-Z ▾"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 44
+                        highlighted: true
+                        font.bold: true
+                        onClicked: root.fullAlphabetMode = true
+                    }
+                }
+
+                // РЕЖИМ 2: Повний алфавіт (A - Z)
+                GridLayout {
+                    columns: 7
+                    Layout.fillWidth: true
+                    rowSpacing: 4
+                    columnSpacing: 3
+                    visible: root.fullAlphabetMode
+
+                    Repeater {
+                        model: root.allVars
+                        Button {
+                            text: modelData
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 38
+                            font.pixelSize: 15
+                            font.bold: true
+                            onClicked: insertSymbol(modelData)
+                        }
+                    }
+
+                    // Кнопка повернення до частих змінних
+                    Button {
+                        text: "Часті ▴"
+                        Layout.columnSpan: 2
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 38
+                        highlighted: true
+                        font.bold: true
+                        onClicked: root.fullAlphabetMode = false
+                    }
                 }
             }
         }
 
-        // Поле відображення результату зі скролом
+        // --- Кнопка дії та вкладки ---
+        Button {
+            id: computeBtn
+            text: "Обчислити"
+            Layout.fillWidth: true
+            Layout.preferredHeight: 48
+            highlighted: true
+            font.bold: true
+            font.pixelSize: 16
+
+            onClicked: calculate()
+        }
+
+        TabBar {
+            id: tabBar
+            Layout.fillWidth: true
+            TabButton { text: "Покроково" }
+            TabButton { text: "Таблиця" }
+            TabButton { text: "Куайн-М." }
+
+            // Автоматично перераховувати при зміні вкладки:
+            onCurrentIndexChanged: calculate()
+        }
+
+        // --- НИЖНЯ ЧАСТИНА: Результати зі скролом ---
         ScrollView {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -76,13 +262,13 @@ ApplicationWindow {
                 id: resultArea
                 readOnly: true
                 font.family: "Monospace"
-                font.pixelSize: 14
+                font.pixelSize: 13
                 selectByMouse: true
                 wrapMode: TextEdit.NoWrap
                 background: Rectangle {
-                    color: "#f5f5f5"
-                    border.color: "#ccc"
-                    radius: 4
+                    color: "#ffffff"
+                    border.color: "#d0d7de"
+                    radius: 6
                 }
             }
         }

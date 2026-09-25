@@ -1,0 +1,14 @@
+-rootPath
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier
+-cmake-output
+-output-file
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/Debug/.qt/qml_imports/LogicSimplifier_conf.cmake
+-importPath
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/Debug
+-importPath
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/Debug/LogicUI
+-importPath
+/usr/lib64/qt6/qml
+-qrcFiles
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/Debug/.qt/rcc/qmake_LogicUI.qrc
+/run/media/fl1wory/106C782F6C781228/Projects/C++/LogicSimplifier/build/Debug/.qt/rcc/LogicSimplifier_raw_qml_0.qrc
